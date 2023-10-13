@@ -14,6 +14,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@NamedQueries({
+        @NamedQuery(name="Product.findAllOrderByNameDesc",
+                  query ="select p from Product p ORDER BY p.name DESC"
+        ),
+        @NamedQuery(name="Product.findByPrice", query ="select p from Product p WHERE p.price =:price")
+        })
 @Table(
         name = "products",
         schema = "ecommerce",

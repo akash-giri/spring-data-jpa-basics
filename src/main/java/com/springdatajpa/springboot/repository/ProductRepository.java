@@ -2,6 +2,8 @@ package com.springdatajpa.springboot.repository;
 
 import com.springdatajpa.springboot.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -45,6 +47,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      *        List<Product> findByPriceGreaterThan(BigDecimal Price);
      *        Stream<Product> findByPriceLessThan(BigDecimal Price);
      *
+     * Problem with Query Methods
+     * ------------------------------------------------------------------------------------------
+     * 1.Keyword support - if the method name parse doesn't support the required keyword,
+     *                     we cannot use this strategy.
+     * 2.The method names of complex query methods are long and ugly.
+     *     List<Product> findByDescriptionContainsOrNameContainsAllIgnoreCase(String description,String name);
+     * 3. And this is for just two parameters. what happens when you want to create a query for
+     *     5 parameters?
+     * 4. This is the point when you'll most likely want to prefer to write your own queries.
+     *      This is doable via the @Query annotation.
      *
      */
 //    List<Product> findByNameAndDescription(String name, String description);
@@ -84,4 +96,104 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findFirst2ByOrderByNameAsc();
 
     List<Product> findTop2ByOrderByPriceDesc();
+
+    /**
+     * Understanding @Query annotation
+     * 1. we can configure the invoked database query by annotating the query method with the
+     *   query annotation
+     *
+     * Define JPQL query with index parameters
+     * @Query("select p from Product p where p.name =?1 or p.description=?2")
+     * Product findByNameOrDescriptionJPQLIndexParam(String name,String description);
+     *
+     * 2.No need to follow query method naming Conventions.
+     * 3.We can use the @Query annotation in spring Data JPA to execute both JPQL and native SQL queries.
+     *
+     * ---------------------------------------------------------------------------------------------------
+     * JPQL Query with Index(Position) parameters
+     * 1. when using position-based parameters, you have to keep track of the order in which you supply
+     *    the parameters in:
+     *
+     *  public interface ProductRepository extends JpaRepository<Product, Long>{
+     *      // Define the JPQL query with index parameters
+     * @query ("select p from Product p where p.name =?1 or p.description =?2")
+     *   Product findByNameOrDescriptionJPQLIndexParam(String name, String description);
+     *  }
+     *
+     * 2. The first parameter passed to the method is mapped to ?1, the second is mapped to ?2, etc. If
+     *   you accidentally switch these up - your query will likely throw an exception, or silently produce
+     *   wrong results.
+     *
+     */
+    // Define JPQL query using @Query annotation with index or position parameters
+    @Query("SELECT p from Product p where p.name = ?1 or p.description = ?2")
+    Product findByNameOrDescriptionJPQLIndexParam(String name, String description);
+
+    // Define JPQL query using @Query annotation with Named parameters
+    @Query("SELECT p from Product p where p.name = :name or p.description = :description")
+    Product findByNameOrDescriptionJPQLNamedParam(@Param("name") String name,
+                                                  @Param("description") String description);
+
+    // Define Native SQL query using @Query annotation with index or position parameters
+    @Query(value = "select * from products p where p.name = ?1 or p.description = ?2", nativeQuery = true)
+    Product findByNameOrDescriptionSQLIndexParam(String name, String description);
+
+    // Define Native SQL query using @Query annotation with Named parameters
+    @Query(value = "select * from products p where p.name = :name or p.description = :description"
+            ,nativeQuery = true)
+    Product findByNameOrDescriptionSQLNamedParam(@Param("name") String name,
+                                                 @Param("description") String description);
+
+    /**
+     * Steps to Define Named JPQL Query
+     * if we want to create a JPQL query, we  must follow these steps:
+     * 1. Annotate the entity with the @NamedQuery annotation from jpa
+     * 2. use @NamedQuery annotation's name attribute to set name of the named query (Product.findBySku)
+     * 3. use @NamedQuery annotation's query attribute to set the JPQL query (SELECT p from
+     *    Product p where p.sku=:sku) as the value
+     *
+     * @Entity
+     * @NamedQuery(name="Product.findBySku",
+     *             query = "SELECT p from Product p WHERE p.sku=:sku"
+     *             )
+     * public class Product{
+     *
+     * }
+     * 4. use named query name in a repository
+     *    // named query method
+     *    Product findBySku(@Param("sku")String sku);
+     */
+
+    // Define Named JPQL query
+    Product findByPrice(@Param("price") BigDecimal price);
+
+    List<Product> findAllOrderByNameDesc();
+
+    /**
+     * Define Multiple Named JPQL Queries
+     * if we want to create a multipleJPQL query, we must follow these steps:
+     * 1. Annotate the entity with the @NamedQueries annotation from JPA/Hibernate.
+     * 2. Use Multiple @NamedQuery annotations from JPA/Hibernate to define a named queries
+     * 3. Set the name of the named query as the value of the @NamedQuery annotation's name
+     *    attribute.
+     * 4. Set the JPQL query as the value of the @NamedQuery annotation's query attribute.
+     *
+     * @NamedQueries(
+     *        {
+     * -        @NamedQuery(name="Product.findAllOrderByNameDesc",
+     *                      query ="select p from Product p ORDER BY p.name DESC"
+     *          ),
+     * -        @NamedQuery(name="Product.findByPrice",
+     *                      query ="select p from Product p WHERE p.price =:price"
+     *          )
+     *        }
+     * )
+     */
+
+    // Define Named native SQL query
+    @Query(nativeQuery = true)
+    Product findByDescription(@Param("description") String description);
+
+    List<Product> findAllOrderByNameASC();
 }
+
