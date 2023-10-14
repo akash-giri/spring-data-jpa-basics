@@ -13,3 +13,30 @@ Note -The one-to-one mapping/association can be either unidirectional or bidirec
    to each other and the target entity's table contains the foreign key. The source entity must
    use the mappedBy attribute to define the bidirectional one-to-one mapping.
 
+
+One to Many mapping
+-----------------------
+we will take order and the orderItem entities to perform One to many mapping.
+One order has many orderItem and many OrderItem belongs to one order.
+In a relational database system, one to many association links two tables based on a foreign key
+ column so that the child table record references the primary key of the parent table row.
+
+Types
+1. unidirectional
+2. bidirectional
+
+the unidirectional @OneToMany association is simpler  since it's just the parent-side that defines
+the relationship.
+In unidirectional mapping , we use only @OneToMany annotation.
+
+The bidirectional association requires the child entity mapping to provide a @ManyToOne
+annotation, which is responsible for controlling the association.
+In bidirectional mapping, we use both @OneToMany and @ManyToOne annotations
+
+Default fetchTypes for mappings
+------------------------------------------
+
+OneToMany : Lazy
+ManyToOne : EAGER
+ManyToMany: LAZY
+OneToOne  : EAGER
