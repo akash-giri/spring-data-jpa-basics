@@ -1,0 +1,15 @@
+One to One Mapping
+------------------------------------
+we will take Order and the Address(billing Address) entities to perform One to One mapping.
+Each Order has exactly one Address and each Address belongs to one order.
+On the database level, this mapped by a foreign key column either on the address or the order table.
+
+the @OneToOne JPA annotation is used to map the source entity with the target entity.
+
+Note -The one-to-one mapping/association can be either unidirectional or bidirectional .
+1. In unidirectional association, source entity has a relationship field that refers to the target entity
+   and the source entity's table contains the foreign key.
+2. In bidirectional association, each entity(i.e. source and target) has a relationship field that refers
+   to each other and the target entity's table contains the foreign key. The source entity must
+   use the mappedBy attribute to define the bidirectional one-to-one mapping.
+
