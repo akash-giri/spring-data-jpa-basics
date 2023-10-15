@@ -40,3 +40,18 @@ OneToMany : Lazy
 ManyToOne : EAGER
 ManyToMany: LAZY
 OneToOne  : EAGER
+
+ManyToMany mapping
+----------------------------------------------
+we will ake user and the role entities to perform many to many mapping
+User has many roles and role has many users.
+
+join tale to keep track of relationships
+need to keep track of which user has which roles and vice and versa.
+the many to many relationship is implemented using a third table called join table which
+contains foreign key for each table.
+
+the @ManyToMany Jpa annotation is used to link the source entity with the target entity.
+
+A many to many association always uses an intermediate join table to store the association that
+joins two entities. the join table is defined using the @JoinTable JPA annotation.
